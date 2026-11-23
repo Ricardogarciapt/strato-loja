@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCart } from '@/lib/cart';
-import { ENVIOS, custoEnvio, eur, precoUnit, type EnvioId, type Lang } from '@/lib/catalog';
+import { ENVIOS, custoEnvio, eur, totalLinha, type EnvioId, type Lang } from '@/lib/catalog';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
 import { LinhaView } from './LinhaView';
@@ -72,7 +72,8 @@ export function Checkout({ lang }: { lang: Lang }) {
       </form>
       <aside className="summary">
         <h3>{t('resumo')}</h3>
-        {c.linhas.map((l) => <LinhaView key={l.key} l={l} lang={lang} total={precoUnit(l) * l.q} />)}
+        {c.linhas.map((l) => <LinhaView key={l.key} l={l} lang={lang} total={totalLinha(l, c.vol)} />)}
+        {c.vol > 0 && <div className="sumrow vol"><span>{t('vol_ap', { x: Math.round(c.vol * 100) })}</span></div>}
         <div className="sumrow"><span>{t('subtotal')}</span><span className="price">{eur(c.sub, lang)}</span></div>
         <div className="sumrow"><span>{t('envio')}</span><span className="price">{sh ? eur(sh, lang) : t('gratis_l')}</span></div>
         <div className="tot"><span>{t('total')}</span><span className="price">{eur(tot, lang)}</span></div>

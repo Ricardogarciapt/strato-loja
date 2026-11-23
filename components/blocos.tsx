@@ -17,7 +17,7 @@ export function ProductCard({ p, lang }: { p: Produto; lang: Lang }) {
       <div className="nm">{p.nome[lang]}</div>
       <div className="meta">
         <span className="price">{p.var || p.pers?.medida ? t('desde') + ' ' : ''}{eur(p.preco, lang)}</span>
-        {p.pers && <span className="opts">{t('pers_ok')}</span>}
+        {p.pers && <span className="opts">{t(p.pers.medida ? 'pers_med' : p.pers.logo ? 'pers_logo' : 'pers_txt')}</span>}
       </div>
     </Link>
   );
@@ -33,6 +33,7 @@ export function PackCard({ pk, lang }: { pk: Pack; lang: Lang }) {
       <p className="mut" style={{ margin: 0 }}>{pk.txt[lang]}</p>
       <div className="small"><b>{t('inclui')}:</b><ul>{pk.itens.map((i) => <li key={i}>{produto(i)!.nome[lang]}</li>)}</ul></div>
       <div className="pr"><b>{eur(pk.preco, lang)}</b><s>{eur(soma, lang)}</s><span className="save">{t('poupas', { x: eur(soma - pk.preco, lang) })}</span></div>
+      <p className="base">{t('pack_base')}</p>
       <AddPack id={pk.id} label={t('add_pack')} ok={t('added')} />
     </div>
   );
@@ -41,13 +42,21 @@ export function PackCard({ pk, lang }: { pk: Pack; lang: Lang }) {
 import { PayBadges } from './blocos-client';
 export { PayBadges };
 
+const IC = [
+  'M6 10V8a6 6 0 1 1 12 0v2M5 10h14v10H5zM12 14v3', // cadeado
+  'M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4', // devolução
+  'M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z', // escudo
+  'M4 12h16M7 8l-3 4 3 4M17 8l3 4-3 4', // medida
+  'M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 1 0 0-.1M17 19a2 2 0 1 0 0-.1', // camião
+  'M4 5h16v11H8l-4 4z', // conversa
+];
 export function Guarantees({ lang }: { lang: Lang }) {
-  const t = tr(lang); const ic = ['€', '14', '2A', '↔', '➜', '@'];
+  const t = tr(lang);
   return (
     <section id="garantias"><div className="wrap">
       <div className="head"><div><span className="eyebrow">{t('gar_eb')}</span><h2>{t('gar_t')}</h2></div><PayBadges /></div>
       <div className="guar">{([1, 2, 3, 4, 5, 6] as const).map((i) => (
-        <div key={i}><span className="ic">{ic[i - 1]}</span><b>{t(`g${i}t`)}</b><p>{t(`g${i}`)}</p></div>
+        <div key={i}><span className="ic" aria-hidden><svg viewBox="0 0 24 24"><path d={IC[i - 1]} /></svg></span><b>{t(`g${i}t`)}</b><p>{t(`g${i}`)}</p></div>
       ))}</div>
     </div></section>
   );

@@ -1,10 +1,10 @@
 'use client';
 /* Carrinho: estado no browser (localStorage), aberto/fechado, avisos curtos. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { chaveLinha, subtotal, type Linha } from './catalog';
+import { chaveLinha, subtotal, taxaVolume, type Linha } from './catalog';
 
 type Ctx = {
-  linhas: Linha[]; n: number; sub: number; aberto: boolean;
+  linhas: Linha[]; n: number; sub: number; vol: number; aberto: boolean;
   add: (l: Omit<Linha, 'key'>) => void; remover: (key: string) => void; limpar: () => void;
   abrir: () => void; fechar: () => void; aviso: (msg: string) => void; avisoMsg: string | null;
 };
@@ -36,7 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const aviso = useCallback((msg: string) => { setAviso(msg); window.setTimeout(() => setAviso(null), 2200); }, []);
 
   const v = useMemo<Ctx>(() => ({
-    linhas, n: linhas.reduce((s, l) => s + l.q, 0), sub: subtotal(linhas), aberto,
+    linhas, n: linhas.reduce((s, l) => s + l.q, 0), sub: subtotal(linhas), vol: taxaVolume(linhas), aberto,
     add, remover, limpar, abrir: () => setAberto(true), fechar: () => setAberto(false), aviso, avisoMsg,
   }), [linhas, aberto, add, remover, limpar, aviso, avisoMsg]);
   return <CartCtx.Provider value={v}>{children}</CartCtx.Provider>;

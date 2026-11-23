@@ -41,9 +41,9 @@ export type Produto = {
 };
 
 export const PRODUTOS: Produto[] = [
-  { id: 'placa-nome', cat: 'pers', preco: 16.9, cor: 'grafite', tag: { pt: 'O mais personalizável', fr: 'Le plus personnalisable' }, pers: { texto: 'inc', logo: true, def: 'RUBEN', max: 14 },
+  { id: 'placa-nome', cat: 'pers', preco: 16.9, cor: 'grafite', tag: { pt: 'O mais personalizável', fr: 'Le plus personnalisable' }, pers: { texto: 'inc', logo: true, def: '', max: 14 },
     nome: { pt: 'Placa de secretária com nome', fr: 'Plaque de bureau à ton nom' },
-    desc: { pt: 'Placa inclinada de 17 cm com o teu nome, o do teu canal ou o da tua empresa, em letras douradas sobre a cor que escolheres. Junta o teu logótipo e fica pronta para a câmara.', fr: 'Plaque inclinée de 17 cm avec ton nom, celui de ta chaîne ou de ton entreprise, en lettres dorées sur la couleur de ton choix. Ajoute ton logo, elle est prête pour la caméra.' },
+    desc: { pt: 'Placa inclinada de 20 cm com o teu nome, o do teu canal ou o da tua empresa, em letras douradas sobre a cor que escolheres. Junta o teu logótipo e fica pronta para a câmara.', fr: 'Plaque inclinée de 20 cm avec ton nom, celui de ta chaîne ou de ton entreprise, en lettres dorées sur la couleur de ton choix. Ajoute ton logo, elle est prête pour la caméra.' },
     sp: { mat: 'PLA', cam: '0,12 mm', peso: '62 g', tempo: '3 h 40 min', med: '20 × 5,5 × 5,2 cm' }, with: ['suporte-telemovel', 'base-auscultadores'] },
   { id: 'gancho-grampo', cat: 'audio', preco: 14.9, cor: 'areia', tag: { pt: 'Ajusta-se ao teu tampo', fr: "S'adapte à ton plateau" }, pers: { texto: 'fee', max: 6, medida: { k: 'espessura', min: 1.2, max: 4.5, step: 0.1, def: 2.5, un: 'cm' } },
     nome: { pt: 'Gancho de auscultadores com grampo', fr: 'Crochet de casque à pince' },
@@ -148,7 +148,16 @@ export function precoUnit(l: Linha): number {
   if (l.oferta) return OFERTAS[l.oferta];
   return parcelas(l).reduce((s, x) => s + x.v, 0);
 }
-export const subtotal = (ls: Linha[]) => ls.reduce((s, l) => s + precoUnit(l) * l.q, 0);
+/** Desconto de volume automático: conta todas as peças do catálogo (não packs nem ofertas) no carrinho. */
+export const VOLUME = [{ min: 25, d: 0.2 }, { min: 10, d: 0.1 }] as const;
+const contaVolume = (l: Linha) => !!l.id && !l.oferta;
+export function taxaVolume(ls: Linha[]): number {
+  const n = ls.filter(contaVolume).reduce((s, l) => s + l.q, 0);
+  return VOLUME.find((v) => n >= v.min)?.d ?? 0;
+}
+export const unitFinal = (l: Linha, taxa: number) => Math.round(precoUnit(l) * (contaVolume(l) ? 1 - taxa : 1) * 100) / 100;
+export const totalLinha = (l: Linha, taxa: number) => unitFinal(l, taxa) * l.q;
+export const subtotal = (ls: Linha[]) => { const tx = taxaVolume(ls); return ls.reduce((s, l) => s + totalLinha(l, tx), 0); };
 export const custoEnvio = (sub: number, e: EnvioId) => (sub >= FRETE_GRATIS ? 0 : ENVIOS[e].preco);
 export const chaveLinha = (l: Omit<Linha, 'key' | 'q'>) => JSON.stringify([l.id, l.cor, l.v, l.txt, l.med, !!l.logo, l.pack, l.oferta, l.com]);
 

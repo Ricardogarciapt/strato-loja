@@ -86,7 +86,8 @@ p.lead{font-size:18px;color:var(--mut);max-width:58ch;margin:0}
 .pc .ph{position:relative;aspect-ratio:1;max-width:100%;border-radius:16px;overflow:hidden;background:var(--card)}
 .pc .ph img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
 .pc:hover .ph img{transform:scale(1.05)}
-.tag{position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:rgba(12,10,8,.78);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--gold2)}
+.tag{position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:rgba(12,10,8,.78);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--gold2);max-width:calc(100% - 20px);line-height:1.35}
+@media (max-width:520px){.tag{font-size:9.5px;padding:3px 7px;top:8px;left:8px}.viewer .phud{top:54px}}
 .pc .nm{font-weight:700;font-size:15px;line-height:1.3}
 .pc .meta{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
 .pc .opts{font-size:12px;color:var(--mut2);font-family:var(--mono)}
@@ -95,7 +96,7 @@ p.lead{font-size:18px;color:var(--mut);max-width:58ch;margin:0}
 .how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 @media (max-width:880px){.how{grid-template-columns:1fr}}
 .how article{background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;align-content:start}
-.how img{width:100%;aspect-ratio:14/9;object-fit:cover;display:block}
+.how img{width:100%;height:auto;aspect-ratio:14/9;object-fit:cover;display:block}
 .how .b{padding:18px;display:grid;gap:6px}
 .how .b p{margin:0;color:var(--mut);font-size:14.5px}
 .swrow{display:flex;gap:6px;padding:18px 18px 0}
@@ -297,3 +298,14 @@ footer a:hover{color:var(--fg)}
 .skip:focus{left:8px;top:8px}
 .lang a{color:var(--mut)}
 .lang a.on{background:var(--fg);color:var(--bg)}
+/* ronda 1 do painel */
+.tag{color:var(--fg);background:rgba(12,10,8,.72);border-color:rgba(255,255,255,.14)}
+@media (max-width:520px){.viewer .hint{display:none}.viewer .modes button{padding:5px 9px;font-size:11.5px}}
+.fhint{display:block;font-size:12.5px;color:var(--mut2);margin-top:6px;line-height:1.45}
+.fhint.err{color:#f08a7a;font-weight:700}
+input.bad{border-color:#f08a7a !important;box-shadow:0 0 0 3px rgba(240,138,122,.15)}
+.eta{margin-top:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px;font-weight:700}
+.eta::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#7bc47f;margin-right:8px;vertical-align:middle}
+.sumrow.vol{color:#7bc47f;font-size:13.5px;font-weight:700}
+.guar .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pk .base{font-size:12.5px;color:var(--mut2);margin:0}

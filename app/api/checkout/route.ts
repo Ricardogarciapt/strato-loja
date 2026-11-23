@@ -1,7 +1,7 @@
 /* Cria a sessão de pagamento. O preço é SEMPRE recalculado aqui a partir do catálogo. */
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { ENVIOS, cor, custoEnvio, pack, precoUnit, produto, subtotal, validarLinha, type EnvioId, type Lang, type Linha } from '@/lib/catalog';
+import { ENVIOS, cor, custoEnvio, pack, produto, subtotal, taxaVolume, totalLinha, unitFinal, validarLinha, type EnvioId, type Lang, type Linha } from '@/lib/catalog';
 import { modeloCom } from '@/lib/comunidade';
 import { descLinha } from '@/components/LinhaView';
 import { SITE_URL } from '@/lib/site';
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const linhas = brutas.map(validarLinha).filter((l): l is Linha => !!l);
   if (!linhas.length || linhas.length !== brutas.length) return NextResponse.json({ erro: 'carrinho inválido' }, { status: 400 });
 
-  const sub = subtotal(linhas); const frete = custoEnvio(sub, envio);
+  const sub = subtotal(linhas); const vol = taxaVolume(linhas); const frete = custoEnvio(sub, envio);
   const nomeDe = (l: Linha) => (l.com ? modeloCom(l.com)!.titulo[lang] : l.pack ? pack(l.pack)!.nome[lang] : produto(l.id!)!.nome[lang]);
   const resumo = linhas.map((l) => `${l.q}× ${nomeDe(l)}${l.pack ? '' : ` (${descLinha(l, lang)})`}`).join('\n');
 
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   if (!key) {
     // modo demonstração: sem cobrança
     const n = 'ST-' + String(Date.now()).slice(-6);
-    return NextResponse.json({ demo: true, encomenda: { n, linhas: linhas.map((l) => ({ ...l, total: precoUnit(l) * l.q })), total: sub + frete } });
+    return NextResponse.json({ demo: true, encomenda: { n, linhas: linhas.map((l) => ({ ...l, total: totalLinha(l, vol) })), total: sub + frete } });
   }
 
   const stripe = new Stripe(key);
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     line_items: linhas.map((l) => ({
       quantity: l.q,
       price_data: {
-        currency: 'eur', unit_amount: Math.round(precoUnit(l) * 100),
+        currency: 'eur', unit_amount: Math.round(unitFinal(l, vol) * 100),
         product_data: {
           name: nomeDe(l),
           description: l.pack ? undefined : descLinha(l, lang) || undefined,
@@ -44,9 +44,13 @@ export async function POST(req: Request) {
     shipping_address_collection: { allowed_countries: ['FR', 'PT', 'BE', 'ES', 'LU'] },
     shipping_options: [{ shipping_rate_data: { type: 'fixed_amount', display_name: ENVIOS[envio].nome[lang], fixed_amount: { amount: Math.round(frete * 100), currency: 'eur' } } }],
     phone_number_collection: { enabled: true },
+    // empresas: NIF/TVA na fatura e fatura PDF automática
+    tax_id_collection: { enabled: true },
+    invoice_creation: { enabled: true, invoice_data: { description: lang === 'fr' ? 'Commande STRATO' : 'Encomenda STRATO', footer: 'STRATO' } },
+    custom_fields: [{ key: 'empresa', label: { type: 'custom', custom: lang === 'fr' ? 'Entreprise (facultatif)' : 'Empresa (opcional)' }, type: 'text', optional: true }],
     consent_collection: { terms_of_service: 'required' },
     custom_text: { terms_of_service_acceptance: { message: lang === 'fr' ? `J'accepte les [CGV](${SITE_URL}/fr/legal#termos).` : `Aceito os [termos e condições](${SITE_URL}/pt/legal#termos).` } },
-    metadata: { resumo: resumo.slice(0, 480), envio },
+    metadata: { resumo: resumo.slice(0, 480), envio, volume: vol ? `-${Math.round(vol * 100)}%` : '' },
     success_url: `${SITE_URL}/${lang}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${SITE_URL}/${lang}/checkout`,
   });

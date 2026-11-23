@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useCart } from '@/lib/cart';
-import { FRETE_GRATIS, eur, precoUnit, type Lang } from '@/lib/catalog';
+import { FRETE_GRATIS, eur, totalLinha, type Lang } from '@/lib/catalog';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
 import { LinhaView } from './LinhaView';
@@ -27,7 +27,7 @@ export function CartDrawer({ lang }: { lang: Lang }) {
           {c.linhas.length ? (
             <>
               <div className="ship"><span>{falta > 0 ? t('falta', { x: eur(falta, lang) }) : t('gratis')}</span><div className="bar"><i style={{ width: `${Math.min(100, (c.sub / FRETE_GRATIS) * 100)}%` }} /></div></div>
-              {c.linhas.map((l) => <LinhaView key={l.key} l={l} lang={lang} onRemove={() => c.remover(l.key)} total={precoUnit(l) * l.q} />)}
+              {c.linhas.map((l) => <LinhaView key={l.key} l={l} lang={lang} onRemove={() => c.remover(l.key)} total={totalLinha(l, c.vol)} />)}
               {!temClips && (
                 <label className="bump">
                   <input type="checkbox" onChange={(e) => e.target.checked && c.add({ id: 'clips-cabo', cor: 'grafite', v: 0, q: 1, oferta: 'bump-clips' })} />
@@ -40,6 +40,7 @@ export function CartDrawer({ lang }: { lang: Lang }) {
         <div className="foot">
           {c.linhas.length > 0 && (
             <>
+              {c.vol > 0 && <div className="sumrow vol"><span>{t('vol_ap', { x: Math.round(c.vol * 100) })}</span></div>}
               <div className="tot"><span>{t('subtotal')}</span><span className="price">{eur(c.sub, lang)}</span></div>
               <Link className="btn gold full" href={href(lang, 'checkout')} onClick={c.fechar}>{t('finalizar')}</Link>
               <div className="lock">🔒 {t('lock')}</div>

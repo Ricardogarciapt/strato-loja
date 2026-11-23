@@ -27,7 +27,8 @@ export function HeroPrint({ lang, children }: { lang: Lang; children?: React.Rea
     g.fillStyle = '#1d1a16'; g.fillRect(0, 0, 512, 512); g.strokeStyle = 'rgba(243,207,115,.13)'; g.lineWidth = 2;
     for (let i = 0; i <= 512; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 512); g.stroke(); g.beginPath(); g.moveTo(0, i); g.lineTo(512, i); g.stroke(); }
     g.fillStyle = 'rgba(243,207,115,.35)'; g.font = 'bold 30px Anton, Impact, sans-serif'; g.fillText('STRATO', 24, 490);
-    const bt = new T.CanvasTexture(bc); bt.encoding = T.sRGBEncoding;
+    const bt = new T.CanvasTexture(bc); bt.encoding = T.sRGBEncoding; bt.anisotropy = ctx.renderer.capabilities.getMaxAnisotropy();
+    ctx.scene.fog = new T.Fog(0x14110e, 60, 140);
     const bed = new T.Mesh(new T.BoxGeometry(34, 0.8, 34), new T.MeshStandardMaterial({ map: bt, roughness: 0.5, metalness: 0.3 }));
     bed.position.y = -0.4; bed.receiveShadow = true; ctx.scene.add(bed);
     const sc = ctx.key.shadow.camera; sc.left = -30; sc.right = 30; sc.top = 30; sc.bottom = -30; sc.updateProjectionMatrix(); ctx.key.position.set(25, 50, 30);
@@ -49,7 +50,7 @@ export function HeroPrint({ lang, children }: { lang: Lang; children?: React.Rea
       cur = seq[i % seq.length]; obj = S.build(cur.id, cur.cor, cur.o); if (cur.id === 'base-auscultadores') obj.scale.setScalar(0.85); ctx.scene.add(obj);
       if (ctx.scene.environment) aplicarHDRI(ctx.renderer, ctx.scene, '/hdri/studio.exr', 0.6, [ctx.ground]);
       const box = new T.Box3().setFromObject(obj); const sz = box.getSize(new T.Vector3()); box.getCenter(alvo);
-      dist = Math.max(sz.x, sz.y, sz.z) * 2.6 + 14;
+      dist = Math.max(sz.x, sz.y, sz.z) * 2.1 + 9;
       if (wide()) alvo.x -= dist * 0.32; else alvo.y -= dist * 0.22;
       sim = S.printSim(ctx.scene, obj); const pr = produto(cur.id)!;
       sim.layers = Math.round(sim.height / (parseFloat(pr.sp.cam.replace(',', '.')) / 10)); secs = segundos(pr.sp.tempo);

@@ -1,6 +1,6 @@
 'use client';
 /* Página de produto interativa: visualizador 3D (rodar, ver a impressão, RA) + configurador em 3 passos. */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CORES, PROJETOS, eur, parcelas, precoUnit, produto, type Lang, type Linha } from '@/lib/catalog';
 import { tr, type Chave } from '@/lib/i18n';
@@ -16,7 +16,7 @@ type ViewerApi = { rebuild: () => void; print: () => void };
 const BD: Record<string, Chave> = { base: 'bd_base', cor: 'bd_cor', var: 'bd_var', txt: 'bd_txt', logo: 'bd_logo', med: 'bd_med' };
 
 export function Configurator({ id, lang }: { id: string; lang: Lang }) {
-  const p = produto(id)!; const t = tr(lang); const cart = useCart();
+  const p = produto(id)!; const t = useMemo(() => tr(lang), [lang]); const cart = useCart();
   const [sel, setSel] = useState<Sel>(() => ({ cor: p.cor, v: 0, q: 1, txt: p.pers?.def ?? '', med: p.pers?.medida?.def ?? null, logo: null }));
   const [modo, setModo] = useState<'3d' | 'foto'>('3d');
   const [hud, setHud] = useState<{ l: number; tot: number } | null>(null);
@@ -32,18 +32,18 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
     const c = q.get('cor'); if (c && CORES.some((x) => x.id === c)) s.cor = c;
     const tx = q.get('txt'); if (tx && p.pers) s.txt = tx.slice(0, p.pers.max ?? 14);
     const m = Number(q.get('med')); const mm = p.pers?.medida; if (mm && m >= mm.min && m <= mm.max) s.med = m;
-    if (Object.keys(s).length) setSel((x) => ({ ...x, ...s }));
+    if (Object.keys(s).length) { selRef.current = { ...selRef.current, ...s }; setSel((x) => ({ ...x, ...s })); }
   }, [p]);
 
   const opts = useCallback(() => {
     const s = selRef.current; const o: Record<string, unknown> = {};
     if (p.pers) {
-      if (s.txt) o.texto = s.txt; else if (p.pers.texto === 'inc') o.texto = ' ';
+      if (s.txt) o.texto = s.txt; else if (p.pers.texto === 'inc') o.texto = t('txt_demo');
       if (s.logo) o.logo = s.logo;
       if (p.pers.medida && s.med != null) o[p.pers.medida.k] = s.med;
     }
     return o;
-  }, [p]);
+  }, [p, t]);
 
   // visualizador 3D
   useEffect(() => {
@@ -88,7 +88,7 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
         const lh = parseFloat(p.sp.cam.replace(',', '.')) / 10 || 0.02; sim!.layers = Math.round(sim!.height / lh); simT = 0;
       },
     };
-    const tm = RM ? 0 : window.setTimeout(() => api.current?.print(), 500);
+    const tm = 0; // começa com a peça acabada; a impressão vê-se no botão «Ver a impressão»
     return () => {
       clearTimeout(tm); cancelAnimationFrame(raf); removeEventListener('resize', size);
       ctx.renderer.dispose(); cv.remove(); api.current = null;
@@ -104,7 +104,25 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
 
   const linha: Omit<Linha, 'key'> = { id: p.id, cor: sel.cor, v: sel.v, q: sel.q, txt: p.pers ? sel.txt.trim() : '', med: sel.med, logo: !!sel.logo };
   const unit = precoUnit({ ...linha, key: '' }); const parts = parcelas({ ...linha, key: '' });
-  const add = () => { cart.add(linha); cart.aviso(t('added')); cart.abrir(); };
+  const [errTxt, setErrTxt] = useState(false);
+  const add = () => {
+    if (p.pers?.texto === 'inc' && !sel.txt.trim()) { setErrTxt(true); const el = document.getElementById('ptxt'); el?.scrollIntoView({ block: 'center', behavior: 'smooth' }); el?.focus({ preventScroll: true }); return; }
+    cart.add(linha); cart.aviso(t('added')); cart.abrir();
+  };
+  // barra fixa só quando o botão principal sai do ecrã
+  const addRef = useRef<HTMLDivElement>(null); const [fixa, setFixa] = useState(false);
+  useEffect(() => {
+    const el = addRef.current; if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setFixa(!e.isIntersecting && e.boundingClientRect.top < 0), { threshold: 0 });
+    io.observe(el); return () => io.disconnect();
+  }, []);
+  // data estimada de chegada (dias úteis: 2 no atelier + transporte)
+  const [chega, setChega] = useState<[string, string] | null>(null);
+  useEffect(() => {
+    const util = (n: number) => { const d = new Date(); while (n > 0) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) n--; } return d; };
+    const f = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'pt-PT', { weekday: 'short', day: 'numeric', month: 'short' });
+    setChega([f.format(util(4)), f.format(util(7))]);
+  }, [lang]);
   const m = p.pers?.medida; let n = 0;
   const StepH = ({ lb, extra }: { lb: string; extra?: React.ReactNode }) => <div className="sh"><b><i>0{++n}</i>{lb}</b>{extra != null && <span>{extra}</span>}</div>;
   const corSel = CORES.find((c) => c.id === sel.cor)!;
@@ -159,7 +177,8 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
             <StepH lb={t('st2')} extra={p.pers.texto === 'inc' ? t('txt_inc') : t('txt_fee')} />
             <div className="opt">
               <label htmlFor="ptxt">{t('txt_lb')}</label>
-              <input id="ptxt" type="text" maxLength={p.pers.max ?? 14} placeholder={t('txt_ph')} value={sel.txt} onChange={(e) => upd({ txt: e.target.value }, 'debounce')} />
+              <input id="ptxt" type="text" maxLength={p.pers.max ?? 14} placeholder={t('txt_ph')} value={sel.txt} aria-invalid={errTxt || undefined} aria-describedby="ptxt-h" className={errTxt ? 'bad' : undefined} onChange={(e) => { if (errTxt && e.target.value.trim()) setErrTxt(false); upd({ txt: e.target.value }, 'debounce'); }} />
+              <span id="ptxt-h" className={errTxt ? 'fhint err' : 'fhint'}>{errTxt ? t('txt_req') : t('txt_max', { n: p.pers.max ?? 14 })}</span>
             </div>
             {p.pers.logo && (
               <div className="opt">
@@ -173,6 +192,7 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
                   }} />
                   {sel.logo && <button className="btn ghost sm" onClick={() => upd({ logo: null })}>{t('logo_rm')}</button>}
                 </div>
+                <span className="fhint">{t('logo_spec')}</span>
               </div>
             )}
           </div>
@@ -205,7 +225,7 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
           </div>
         )}
 
-        <div className="addrow">
+        <div className="addrow" ref={addRef}>
           <div className="qty">
             <button aria-label="−" onClick={() => upd({ q: Math.max(1, sel.q - 1) }, 'no')}>−</button>
             <span>{sel.q}</span>
@@ -213,7 +233,8 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
           </div>
           <button className="btn gold" onClick={add}>{t('add')}</button>
         </div>
-        <div className="assure">{(['as1', 'as2', 'as3'] as const).map((k) => <div key={k}>{t(k)}</div>)}</div>
+        {chega && <div className="eta">{t('chega', { a: chega[0], b: chega[1], e: 'Colissimo / Mondial Relay' })}</div>}
+        <div className="assure">{(['as1', 'as2', 'as3'] as const).map((k) => <div key={k}>{t(k)}</div>)}<div>{t('vol_info')}</div></div>
         <dl className="specs">
           {([['sp_mod', t('modelo')], ['sp_mat', p.sp.mat], ['sp_cam', p.sp.cam], ['sp_peso', p.sp.peso], ['sp_tempo', p.sp.tempo], ['sp_med', p.sp.med], ['sp_prazo', t('prazo')]] as [Chave, string][]).map(([k, v]) => (
             <div key={k}><dt>{t(k)}</dt><dd>{v}</dd></div>
@@ -221,7 +242,7 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
         </dl>
       </div>
 
-      <div className="stickybuy show"><span className="price">{eur(unit, lang)}</span><button className="btn gold" onClick={add}>{t('add')}</button></div>
+      <div className={fixa ? 'stickybuy show' : 'stickybuy'}><span className="price">{eur(unit, lang)}</span><button className="btn gold" onClick={add}>{t('add')}</button></div>
       {ar && <ARModal id={p.id} cor={sel.cor} opts={opts()} nome={p.nome[lang]} t={t} partilha={partilha} onClose={() => setAr(false)} />}
     </div>
   );
