@@ -21,7 +21,7 @@ export function LinhaView({ l, lang, total, onRemove }: { l: Linha; lang: Lang; 
   const mc = l.com ? modeloCom(l.com) : undefined;
   const src = mc ? mc.imagem : `/img/${pk ? pk.itens[0] : p?.id}.jpg`;
   const nome = mc ? mc.titulo[lang] : pk ? pk.nome[lang] : p?.nome[lang];
-  const sub = pk ? `${pk.itens.length} · ${t('total_pack')}` : descLinha(l, lang);
+  const sub = pk ? [cor(l.cor ?? '')?.nome[lang], l.txt ? `«${l.txt}»` : '', `${pk.itens.length} · ${t('total_pack')}`].filter(Boolean).join(' · ') : descLinha(l, lang);
   return (
     <div className="li">
       <img src={src} alt="" width={64} height={64} />

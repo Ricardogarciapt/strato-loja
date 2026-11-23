@@ -309,3 +309,14 @@ input.bad{border-color:#f08a7a !important;box-shadow:0 0 0 3px rgba(240,138,122,
 .sumrow.vol{color:#7bc47f;font-size:13.5px;font-weight:700}
 .guar .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .pk .base{font-size:12.5px;color:var(--mut2);margin:0}
+/* ronda 2 */
+.envinfo{font-size:13px;color:var(--mut2);margin-top:4px}
+.lock .ico,.ico{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px}
+.pkcfg{display:grid;gap:10px}
+.pkrow{display:grid;gap:6px;font-size:13px;color:var(--mut)}
+.pkrow b{color:var(--fg)}
+.pkrow .sw{display:flex;gap:6px;flex-wrap:wrap}
+.pkrow .sw button{width:26px;height:26px;border-radius:50%;border:2px solid transparent;outline:1px solid var(--line2)}
+.pkrow .sw button.on{border-color:var(--bg);outline:2px solid var(--gold2)}
+.pkrow input{background:var(--bg2,#14110e);border:1px solid var(--line);border-radius:10px;padding:9px 11px;color:var(--fg);font:inherit}
+.btn:disabled{opacity:.5;cursor:not-allowed}

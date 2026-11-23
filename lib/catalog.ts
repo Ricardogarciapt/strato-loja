@@ -88,6 +88,7 @@ export const PRODUTOS: Produto[] = [
 ];
 
 export type Pack = { id: string; nome: L10n; itens: string[]; preco: number; txt: L10n };
+export const packTemNome = (pk: Pack) => pk.itens.some((i) => produto(i)?.pers);
 export const PACKS: Pack[] = [
   { id: 'pack-limpo', nome: { pt: 'Setup Limpo', fr: 'Setup Net' }, itens: ['calha-cabos', 'clips-cabo', 'gancho-grampo'], preco: 34.9, txt: { pt: 'Tira os cabos do chão e os auscultadores da mesa numa tarde.', fr: "Sors les câbles du sol et le casque du bureau en un après-midi." } },
   { id: 'pack-gamer', nome: { pt: 'Setup Gamer', fr: 'Setup Gamer' }, itens: ['suporte-comandos', 'base-auscultadores', 'placa-nome'], preco: 52.9, txt: { pt: 'Comandos, auscultadores e a tua gamertag na secretária.', fr: 'Manettes, casque et ton gamertag sur le bureau.' } },
@@ -164,7 +165,12 @@ export const chaveLinha = (l: Omit<Linha, 'key' | 'q'>) => JSON.stringify([l.id,
 /** Valida uma linha vinda do browser. Devolve null se algo não bater certo com o catálogo. */
 export function validarLinha(l: Linha): Linha | null {
   const q = Math.floor(Number(l.q)); if (!(q >= 1 && q <= 50)) return null;
-  if (l.pack) return pack(l.pack) ? { key: l.key, q, pack: l.pack } : null;
+  if (l.pack) {
+    const pk = pack(l.pack); if (!pk) return null;
+    const c = cor(l.cor ?? 'grafite'); if (!c || c.extra) return null;
+    const txt = packTemNome(pk) ? String(l.txt ?? '').replace(/[^\p{L}\p{N} .&'\-]/gu, '').slice(0, 14).trim() : '';
+    return { key: l.key, q, pack: l.pack, cor: c.id, txt };
+  }
   if (l.com) return modeloCom(l.com) && cor(l.cor ?? '') ? { key: l.key, q, com: l.com, cor: l.cor } : null;
   const p = l.id ? produto(l.id) : undefined; if (!p) return null;
   if (l.oferta && !(l.oferta in OFERTAS)) return null;

@@ -157,6 +157,7 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
         <div className="ptop">
           <h1 style={{ fontSize: 'clamp(30px,3.4vw,44px)' }}>{p.nome[lang]}</h1>
           <div className="p price">{eur(unit, lang)}</div>
+          <div className="envinfo">{t('envio_info')}</div>
           <p className="desc">{p.desc[lang]}</p>
         </div>
 

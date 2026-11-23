@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   const sub = subtotal(linhas); const vol = taxaVolume(linhas); const frete = custoEnvio(sub, envio);
   const nomeDe = (l: Linha) => (l.com ? modeloCom(l.com)!.titulo[lang] : l.pack ? pack(l.pack)!.nome[lang] : produto(l.id!)!.nome[lang]);
-  const resumo = linhas.map((l) => `${l.q}× ${nomeDe(l)}${l.pack ? '' : ` (${descLinha(l, lang)})`}`).join('\n');
+  const resumo = linhas.map((l) => `${l.q}× ${nomeDe(l)}${l.pack ? ` (${cor(l.cor ?? '')?.nome[lang] ?? ''}${l.txt ? ` «${l.txt}»` : ''})` : ` (${descLinha(l, lang)})`}`).join('\n');
 
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         currency: 'eur', unit_amount: Math.round(unitFinal(l, vol) * 100),
         product_data: {
           name: nomeDe(l),
-          description: l.pack ? undefined : descLinha(l, lang) || undefined,
+          description: (l.pack ? [cor(l.cor ?? '')?.nome[lang], l.txt ? `«${l.txt}»` : ''].filter(Boolean).join(' · ') : descLinha(l, lang)) || undefined,
           images: [l.com ? modeloCom(l.com)!.imagem : `${SITE_URL}/img/${l.pack ? pack(l.pack)!.itens[0] : l.id}.jpg`],
           metadata: { id: l.id ?? l.pack ?? l.com ?? '', licenca: l.com ? `${modeloCom(l.com)!.licenca} · ${modeloCom(l.com)!.url}` : '', cor: cor(l.cor ?? '')?.id ?? '', texto: l.txt ?? '', medida: l.med != null ? String(l.med) : '', logo: l.logo ? 'sim (pedir ficheiro ao cliente)' : '' },
         },

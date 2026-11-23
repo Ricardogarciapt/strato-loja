@@ -1,7 +1,7 @@
 /* Blocos de página sem estado (servidor): cartões, packs, garantias, processo, atelier, projetos. */
 import Link from 'next/link';
 import Image from 'next/image';
-import { PRODUTOS, eur, produto, type Lang, type Pack, type Produto, type Projeto } from '@/lib/catalog';
+import { PRODUTOS, eur, packTemNome, produto, type Lang, type Pack, type Produto, type Projeto } from '@/lib/catalog';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
 import { AddPack } from './client-bits';
@@ -34,7 +34,7 @@ export function PackCard({ pk, lang }: { pk: Pack; lang: Lang }) {
       <div className="small"><b>{t('inclui')}:</b><ul>{pk.itens.map((i) => <li key={i}>{produto(i)!.nome[lang]}</li>)}</ul></div>
       <div className="pr"><b>{eur(pk.preco, lang)}</b><s>{eur(soma, lang)}</s><span className="save">{t('poupas', { x: eur(soma - pk.preco, lang) })}</span></div>
       <p className="base">{t('pack_base')}</p>
-      <AddPack id={pk.id} label={t('add_pack')} ok={t('added')} />
+      <AddPack id={pk.id} label={t('add_pack')} ok={t('added')} nome={packTemNome(pk)} lang={lang} lbCor={t('pk_cor')} lbNome={t('pk_nome')} ph={t('txt_ph')} />
     </div>
   );
 }

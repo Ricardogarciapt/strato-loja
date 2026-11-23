@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCart } from '@/lib/cart';
 import { ENVIOS, custoEnvio, eur, totalLinha, type EnvioId, type Lang } from '@/lib/catalog';
+import { Cadeado } from './client-bits';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
 import { LinhaView } from './LinhaView';
@@ -61,14 +62,14 @@ export function Checkout({ lang }: { lang: Lang }) {
           {temPers && <p className="note">{fr ? 'Ta commande contient des pièces personnalisées : elles sont fabriquées pour toi et ne sont pas reprises pour rétractation. La garantie légale et la garantie d’ajustement s’appliquent toujours.' : 'A tua encomenda tem peças personalizadas: são feitas só para ti e não têm devolução por arrependimento. A garantia legal e a garantia de encaixe aplicam-se sempre.'}</p>}
           <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14 }}>
             <input type="checkbox" checked={aceito} onChange={(e) => setAceito(e.target.checked)} style={{ marginTop: 3, accentColor: 'var(--gold)' }} />
-            <span>{fr ? 'J’accepte les ' : 'Aceito os '}<Link href={href(lang, 'legal') + '#termos'} target="_blank">{t('f_termos').toLowerCase()}</Link>{fr ? ' et la politique de confidentialité.' : ' e a política de privacidade.'}</span>
+            <span>{fr ? 'J’accepte les ' : 'Aceito os '}<Link href={href(lang, 'legal') + '#termos'} target="_blank">{fr ? t('f_termos') : t('f_termos').toLowerCase()}</Link>{fr ? ' et la politique de confidentialité.' : ' e a política de privacidade.'}</span>
           </label>
         </fieldset>
         {estado === 'erro' && <p className="err" role="alert">{erro}</p>}
-        <button className="btn gold full" type="submit" disabled={estado === 'aguarda'}>
+        <button className="btn gold full" type="submit" disabled={estado === 'aguarda' || !aceito}>
           {estado === 'aguarda' ? '…' : (fr ? `Payer ${eur(tot, lang)} en toute sécurité` : `Pagar ${eur(tot, lang)} com segurança`)}
         </button>
-        <div className="lock">🔒 {t('lock')}</div>
+        <div className="lock"><Cadeado /> {t('lock')}</div>
       </form>
       <aside className="summary">
         <h3>{t('resumo')}</h3>

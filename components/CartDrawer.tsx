@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { FRETE_GRATIS, eur, totalLinha, type Lang } from '@/lib/catalog';
+import { Cadeado } from './client-bits';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
 import { LinhaView } from './LinhaView';
@@ -43,7 +44,7 @@ export function CartDrawer({ lang }: { lang: Lang }) {
               {c.vol > 0 && <div className="sumrow vol"><span>{t('vol_ap', { x: Math.round(c.vol * 100) })}</span></div>}
               <div className="tot"><span>{t('subtotal')}</span><span className="price">{eur(c.sub, lang)}</span></div>
               <Link className="btn gold full" href={href(lang, 'checkout')} onClick={c.fechar}>{t('finalizar')}</Link>
-              <div className="lock">🔒 {t('lock')}</div>
+              <div className="lock"><Cadeado /> {t('lock')}</div>
             </>
           )}
           <button className="btn ghost full" onClick={c.fechar}>{t('continuar')}</button>

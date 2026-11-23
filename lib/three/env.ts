@@ -23,7 +23,7 @@ export async function aplicarHDRI(renderer: THREE.WebGLRenderer, scene: THREE.Sc
     scene.traverse((o) => {
       if (excluir.includes(o)) { const mm = (o as THREE.Mesh).material as THREE.MeshStandardMaterial; if (mm && 'envMapIntensity' in mm) mm.envMapIntensity = 0; return; }
       const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-      if (m && 'envMapIntensity' in m) m.envMapIntensity = intensidade;
+      if (m && 'envMapIntensity' in m) m.envMapIntensity = m.userData?.print ? intensidade * 0.45 : intensidade;
     });
     return true;
   } catch { return false; }

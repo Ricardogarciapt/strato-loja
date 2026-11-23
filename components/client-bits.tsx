@@ -4,11 +4,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useCart } from '@/lib/cart';
-import type { Lang } from '@/lib/catalog';
+import { CORES, type Lang } from '@/lib/catalog';
 
-export function AddPack({ id, label, ok }: { id: string; label: string; ok: string }) {
-  const c = useCart();
-  return <button className="btn gold" onClick={() => { c.add({ pack: id, q: 1 }); c.aviso(ok); c.abrir(); }}>{label}</button>;
+export function Cadeado() {
+  return <svg className="ico" viewBox="0 0 24 24" aria-hidden><path d="M6 10V8a6 6 0 1 1 12 0v2M5 10h14v10H5z" /></svg>;
+}
+
+export function AddPack({ id, label, ok, nome, lang, lbCor, lbNome, ph }: { id: string; label: string; ok: string; nome: boolean; lang: Lang; lbCor: string; lbNome: string; ph: string }) {
+  const c = useCart(); const [cr, setCr] = useState('grafite'); const [txt, setTxt] = useState('');
+  const cores = CORES.filter((x) => !x.extra);
+  return (
+    <div className="pkcfg">
+      <div className="pkrow"><span>{lbCor}: <b>{cores.find((x) => x.id === cr)?.nome[lang]}</b></span>
+        <div className="sw">{cores.map((x) => <button key={x.id} type="button" className={x.id === cr ? 'on' : ''} style={{ background: x.swatch }} aria-label={x.nome[lang]} aria-pressed={x.id === cr} onClick={() => setCr(x.id)} />)}</div>
+      </div>
+      {nome && <label className="pkrow"><span>{lbNome}</span><input type="text" maxLength={14} placeholder={ph} value={txt} onChange={(e) => setTxt(e.target.value)} /></label>}
+      <button className="btn gold" onClick={() => { c.add({ pack: id, q: 1, cor: cr, txt: txt.trim() }); c.aviso(ok); c.abrir(); }}>{label}</button>
+    </div>
+  );
 }
 
 export function CartButton({ label }: { label: string }) {
