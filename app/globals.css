@@ -320,3 +320,4 @@ input.bad{border-color:#f08a7a !important;box-shadow:0 0 0 3px rgba(240,138,122,
 .pkrow .sw button.on{border-color:var(--bg);outline:2px solid var(--gold2)}
 .pkrow input{background:var(--bg2,#14110e);border:1px solid var(--line);border-radius:10px;padding:9px 11px;color:var(--fg);font:inherit}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.pkrow .sw button{position:relative}.pkrow .sw .pl{position:absolute;top:-7px;right:-9px;font-style:normal;font-size:9px;font-weight:800;background:var(--gold);color:#140f06;border-radius:99px;padding:1px 4px}

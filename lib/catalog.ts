@@ -88,7 +88,7 @@ export const PRODUTOS: Produto[] = [
 ];
 
 export type Pack = { id: string; nome: L10n; itens: string[]; preco: number; txt: L10n };
-export const packTemNome = (pk: Pack) => pk.itens.some((i) => produto(i)?.pers);
+export const packTemNome = (pk: Pack) => pk.itens.some((i) => produto(i)?.pers?.texto === 'inc');
 export const PACKS: Pack[] = [
   { id: 'pack-limpo', nome: { pt: 'Setup Limpo', fr: 'Setup Net' }, itens: ['calha-cabos', 'clips-cabo', 'gancho-grampo'], preco: 34.9, txt: { pt: 'Tira os cabos do chão e os auscultadores da mesa numa tarde.', fr: "Sors les câbles du sol et le casque du bureau en un après-midi." } },
   { id: 'pack-gamer', nome: { pt: 'Setup Gamer', fr: 'Setup Gamer' }, itens: ['suporte-comandos', 'base-auscultadores', 'placa-nome'], preco: 52.9, txt: { pt: 'Comandos, auscultadores e a tua gamertag na secretária.', fr: 'Manettes, casque et ton gamertag sur le bureau.' } },
@@ -145,7 +145,7 @@ export function parcelas(l: Linha): Parcela[] {
 }
 export function precoUnit(l: Linha): number {
   if (l.com) { const m = modeloCom(l.com); if (!m) return 0; return m.preco + (cor(l.cor ?? '')?.extra ?? 0); }
-  if (l.pack) return pack(l.pack)?.preco ?? 0;
+  if (l.pack) { const pk = pack(l.pack); if (!pk) return 0; const ex = cor(l.cor ?? '')?.extra ?? 0; return pk.preco + ex * pk.itens.length; }
   if (l.oferta) return OFERTAS[l.oferta];
   return parcelas(l).reduce((s, x) => s + x.v, 0);
 }
@@ -167,7 +167,7 @@ export function validarLinha(l: Linha): Linha | null {
   const q = Math.floor(Number(l.q)); if (!(q >= 1 && q <= 50)) return null;
   if (l.pack) {
     const pk = pack(l.pack); if (!pk) return null;
-    const c = cor(l.cor ?? 'grafite'); if (!c || c.extra) return null;
+    const c = cor(l.cor ?? 'grafite'); if (!c) return null;
     const txt = packTemNome(pk) ? String(l.txt ?? '').replace(/[^\p{L}\p{N} .&'\-]/gu, '').slice(0, 14).trim() : '';
     return { key: l.key, q, pack: l.pack, cor: c.id, txt };
   }

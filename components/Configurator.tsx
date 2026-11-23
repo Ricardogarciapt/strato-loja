@@ -56,13 +56,14 @@ export function Configurator({ id, lang }: { id: string; lang: Lang }) {
     let fr = S.frame(ctx, obj, 0.65, 0.3, 1.2);
     const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let az = p.id === 'placa-nome' ? 0.35 : 0.65, el2 = 0.3, auto = !RM, raf = 0, last = performance.now(), simT = 0;
+    const az0 = az; let osc = 0;
     let drag: null | { x: number; y: number; az: number; el: number } = null;
     let sim: null | { set: (p: number, t: number) => void; dispose: () => void; height: number; layers?: number } = null;
     const size = () => { const w = el.clientWidth; ctx.renderer.setSize(w, w, false); ctx.cam.aspect = 1; ctx.cam.updateProjectionMatrix(); };
     const place = () => { const { c, d } = fr; ctx.cam.position.set(c.x + d * Math.cos(el2) * Math.sin(az), c.y + d * Math.sin(el2), c.z + d * Math.cos(el2) * Math.cos(az)); ctx.cam.lookAt(c); };
     const loop = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000); last = now;
-      if (auto && !drag) az += dt * 0.35;
+      if (auto && !drag) { osc += dt * 0.5; az = az0 + Math.sin(osc) * 0.7; }
       if (sim) {
         simT += dt; const pr = Math.min(1, simT / 6); sim.set(pr, simT);
         setHud({ l: Math.round(pr * (sim.layers ?? 0)), tot: sim.layers ?? 0 });

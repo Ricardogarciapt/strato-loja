@@ -12,11 +12,11 @@ export function Cadeado() {
 
 export function AddPack({ id, label, ok, nome, lang, lbCor, lbNome, ph }: { id: string; label: string; ok: string; nome: boolean; lang: Lang; lbCor: string; lbNome: string; ph: string }) {
   const c = useCart(); const [cr, setCr] = useState('grafite'); const [txt, setTxt] = useState('');
-  const cores = CORES.filter((x) => !x.extra);
+  const cores = CORES;
   return (
     <div className="pkcfg">
       <div className="pkrow"><span>{lbCor}: <b>{cores.find((x) => x.id === cr)?.nome[lang]}</b></span>
-        <div className="sw">{cores.map((x) => <button key={x.id} type="button" className={x.id === cr ? 'on' : ''} style={{ background: x.swatch }} aria-label={x.nome[lang]} aria-pressed={x.id === cr} onClick={() => setCr(x.id)} />)}</div>
+        <div className="sw">{cores.map((x) => <button key={x.id} type="button" className={x.id === cr ? 'on' : ''} style={{ background: x.swatch }} aria-label={x.nome[lang]} aria-pressed={x.id === cr} onClick={() => setCr(x.id)}>{x.extra ? <i className="pl">+{x.extra}</i> : null}</button>)}</div>
       </div>
       {nome && <label className="pkrow"><span>{lbNome}</span><input type="text" maxLength={14} placeholder={ph} value={txt} onChange={(e) => setTxt(e.target.value)} /></label>}
       <button className="btn gold" onClick={() => { c.add({ pack: id, q: 1, cor: cr, txt: txt.trim() }); c.aviso(ok); c.abrir(); }}>{label}</button>

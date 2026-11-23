@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCart } from '@/lib/cart';
-import { ENVIOS, custoEnvio, eur, totalLinha, type EnvioId, type Lang } from '@/lib/catalog';
+import { ENVIOS, FRETE_GRATIS, custoEnvio, eur, totalLinha, type EnvioId, type Lang } from '@/lib/catalog';
 import { Cadeado } from './client-bits';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
@@ -77,6 +77,7 @@ export function Checkout({ lang }: { lang: Lang }) {
         {c.vol > 0 && <div className="sumrow vol"><span>{t('vol_ap', { x: Math.round(c.vol * 100) })}</span></div>}
         <div className="sumrow"><span>{t('subtotal')}</span><span className="price">{eur(c.sub, lang)}</span></div>
         <div className="sumrow"><span>{t('envio')}</span><span className="price">{sh ? eur(sh, lang) : t('gratis_l')}</span></div>
+        {sh > 0 && <div className="sumrow vol" style={{ color: 'var(--mut2)' }}><span>{t('falta', { x: eur(FRETE_GRATIS - c.sub, lang) })}</span></div>}
         <div className="tot"><span>{t('total')}</span><span className="price">{eur(tot, lang)}</span></div>
         <div className="assure small">{(['as1', 'as2', 'as3'] as const).map((k) => <div key={k}>{t(k)}</div>)}</div>
       </aside>
