@@ -1,6 +1,8 @@
 /* Catálogo, cores, packs, projetos e regras de preço da STRATO.
    É a única fonte de preços: o cliente mostra-os, o servidor volta a calculá-los no checkout. */
 
+import { modeloCom } from './comunidade';
+
 export type Lang = 'pt' | 'fr';
 export const LANGS: Lang[] = ['pt', 'fr'];
 export type L10n = Record<Lang, string>;
@@ -117,6 +119,7 @@ export type Linha = {
   key: string; q: number;
   id?: string; cor?: string; v?: number; txt?: string; med?: number | null; logo?: boolean;
   pack?: string; oferta?: 'bump-clips' | 'upsell-placa';
+  com?: string; // design da comunidade (MakerWorld, licença comercial)
 };
 export const OFERTAS = { 'bump-clips': 5.9, 'upsell-placa': 9.9 } as const;
 
@@ -140,18 +143,20 @@ export function parcelas(l: Linha): Parcela[] {
   return out;
 }
 export function precoUnit(l: Linha): number {
+  if (l.com) { const m = modeloCom(l.com); if (!m) return 0; return m.preco + (cor(l.cor ?? '')?.extra ?? 0); }
   if (l.pack) return pack(l.pack)?.preco ?? 0;
   if (l.oferta) return OFERTAS[l.oferta];
   return parcelas(l).reduce((s, x) => s + x.v, 0);
 }
 export const subtotal = (ls: Linha[]) => ls.reduce((s, l) => s + precoUnit(l) * l.q, 0);
 export const custoEnvio = (sub: number, e: EnvioId) => (sub >= FRETE_GRATIS ? 0 : ENVIOS[e].preco);
-export const chaveLinha = (l: Omit<Linha, 'key' | 'q'>) => JSON.stringify([l.id, l.cor, l.v, l.txt, l.med, !!l.logo, l.pack, l.oferta]);
+export const chaveLinha = (l: Omit<Linha, 'key' | 'q'>) => JSON.stringify([l.id, l.cor, l.v, l.txt, l.med, !!l.logo, l.pack, l.oferta, l.com]);
 
 /** Valida uma linha vinda do browser. Devolve null se algo não bater certo com o catálogo. */
 export function validarLinha(l: Linha): Linha | null {
   const q = Math.floor(Number(l.q)); if (!(q >= 1 && q <= 50)) return null;
   if (l.pack) return pack(l.pack) ? { key: l.key, q, pack: l.pack } : null;
+  if (l.com) return modeloCom(l.com) && cor(l.cor ?? '') ? { key: l.key, q, com: l.com, cor: l.cor } : null;
   const p = l.id ? produto(l.id) : undefined; if (!p) return null;
   if (l.oferta && !(l.oferta in OFERTAS)) return null;
   if (!cor(l.cor ?? '')) return null;

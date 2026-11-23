@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { ENVIOS, cor, custoEnvio, pack, precoUnit, produto, subtotal, validarLinha, type EnvioId, type Lang, type Linha } from '@/lib/catalog';
+import { modeloCom } from '@/lib/comunidade';
 import { descLinha } from '@/components/LinhaView';
 import { SITE_URL } from '@/lib/site';
 
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
   if (!linhas.length || linhas.length !== brutas.length) return NextResponse.json({ erro: 'carrinho inválido' }, { status: 400 });
 
   const sub = subtotal(linhas); const frete = custoEnvio(sub, envio);
-  const nomeDe = (l: Linha) => (l.pack ? pack(l.pack)!.nome[lang] : produto(l.id!)!.nome[lang]);
+  const nomeDe = (l: Linha) => (l.com ? modeloCom(l.com)!.titulo[lang] : l.pack ? pack(l.pack)!.nome[lang] : produto(l.id!)!.nome[lang]);
   const resumo = linhas.map((l) => `${l.q}× ${nomeDe(l)}${l.pack ? '' : ` (${descLinha(l, lang)})`}`).join('\n');
 
   const key = process.env.STRIPE_SECRET_KEY;
@@ -35,8 +36,8 @@ export async function POST(req: Request) {
         product_data: {
           name: nomeDe(l),
           description: l.pack ? undefined : descLinha(l, lang) || undefined,
-          images: [`${SITE_URL}/img/${l.pack ? pack(l.pack)!.itens[0] : l.id}.jpg`],
-          metadata: { id: l.id ?? l.pack ?? '', cor: cor(l.cor ?? '')?.id ?? '', texto: l.txt ?? '', medida: l.med != null ? String(l.med) : '', logo: l.logo ? 'sim (pedir ficheiro ao cliente)' : '' },
+          images: [l.com ? modeloCom(l.com)!.imagem : `${SITE_URL}/img/${l.pack ? pack(l.pack)!.itens[0] : l.id}.jpg`],
+          metadata: { id: l.id ?? l.pack ?? l.com ?? '', licenca: l.com ? `${modeloCom(l.com)!.licenca} · ${modeloCom(l.com)!.url}` : '', cor: cor(l.cor ?? '')?.id ?? '', texto: l.txt ?? '', medida: l.med != null ? String(l.med) : '', logo: l.logo ? 'sim (pedir ficheiro ao cliente)' : '' },
         },
       },
     })),

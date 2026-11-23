@@ -4,6 +4,7 @@ import { CORES, PACKS, PROJETOS, produto, type Lang } from '@/lib/catalog';
 import { tr } from '@/lib/i18n';
 import { href } from '@/lib/site';
 import { HeroPrint } from '@/components/HeroPrint';
+import { MontraComunidade } from '@/components/Comunidade';
 import { Atelier, Guarantees, PackCard, Process, ProductCard } from '@/components/blocos';
 
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
@@ -53,6 +54,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         <div className="head"><div><h2>{t('packs_t')}</h2><p className="mut">{t('packs_s')}</p></div></div>
         <div className="packs">{PACKS.map((pk) => <PackCard key={pk.id} pk={pk} lang={lang} />)}</div>
       </div></section>
+      <MontraComunidade lang={lang} />
       <Guarantees lang={lang} /><Process lang={lang} /><Atelier lang={lang} />
     </>
   );
