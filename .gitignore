@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*
+!.env.example
+
+# ficheiros de impressão ficam fora do repositório público
+design/
+*.stl
+tsconfig.tsbuildinfo
