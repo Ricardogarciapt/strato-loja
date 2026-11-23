@@ -5,7 +5,7 @@ import { CORES } from '@/lib/catalog';
 
 type R = { ok: boolean; motivo?: string; titulo?: string; criador?: string; licenca?: string | null; licencaTexto?: string; imagem?: string; url?: string; publicado?: boolean; modelo?: unknown };
 
-export function Importador({ atuais }: { atuais: string[] }) {
+export function Importador({ atuais, sessao = false }: { atuais: string[]; sessao?: boolean }) {
   const [url, setUrl] = useState(''); const [token, setToken] = useState(''); const [pago, setPago] = useState(false);
   const [preco, setPreco] = useState('14.90'); const [corSel, setCor] = useState('grafite'); const [tPt, setTPt] = useState(''); const [tFr, setTFr] = useState('');
   const [r, setR] = useState<R | null>(null); const [aOcupar, setOc] = useState(false);
@@ -17,10 +17,10 @@ export function Importador({ atuais }: { atuais: string[] }) {
   };
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      <h1 style={{ fontSize: 34 }}>Curadoria MakerWorld</h1>
+      <h2 style={{ fontSize: 28 }}>Curadoria MakerWorld</h2>
       <p className="mut">Só entram modelos com licença que permite vender impressões (CC0, CC BY, CC BY-SA) ou de criadores com quem tens licença comercial paga do MakerWorld. A montra mostra sempre o crédito. O ficheiro nunca é vendido nem publicado.</p>
       <div className="opt"><label htmlFor="mw">Link do modelo</label><input id="mw" type="url" placeholder="https://makerworld.com/pt/models/123456" value={url} onChange={(e) => setUrl(e.target.value)} /></div>
-      <div className="opt"><label htmlFor="tk">Código de acesso</label><input id="tk" type="password" value={token} onChange={(e) => setToken(e.target.value)} /></div>
+      {!sessao && <div className="opt"><label htmlFor="tk">Código de acesso</label><input id="tk" type="password" value={token} onChange={(e) => setToken(e.target.value)} /></div>}
       <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14 }}><input type="checkbox" checked={pago} onChange={(e) => setPago(e.target.checked)} /> Tenho licença comercial paga do MakerWorld para este criador</label>
       <button className="btn" disabled={aOcupar || !url} onClick={() => pedir(false)}>Analisar licença</button>
       {r && (

@@ -184,7 +184,8 @@ p.lead{font-size:18px;color:var(--mut);max-width:58ch;margin:0}
 .sw button .x{position:absolute;right:-7px;top:-7px;font-size:9px;background:var(--gold);color:#140f06;border-radius:999px;padding:0 4px;font-family:var(--mono)}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg button{border:1px solid var(--line2);background:none;border-radius:10px;padding:9px 13px;font-size:14px;font-weight:600}
-.seg button.on{border-color:var(--gold2);background:rgba(217,169,58,.1)}
+.seg a{border:1px solid var(--line2);border-radius:10px;font-size:14px;font-weight:600}
+.seg a.on,.seg button.on{border-color:var(--gold2);background:rgba(217,169,58,.1)}
 input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 12px;color:var(--fg);font:inherit}
 input[type=range]{width:100%;accent-color:var(--gold)}
 .rangeval{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;color:var(--mut)}

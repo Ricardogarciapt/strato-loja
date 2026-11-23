@@ -4,13 +4,15 @@ import { lerModelo } from '@/lib/makerworld';
 import { guardarModelo } from '@/lib/github-dados';
 import { cor } from '@/lib/catalog';
 import type { ModeloComunidade } from '@/lib/comunidade';
+import { sessao } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   const b = await req.json().catch(() => ({})) as { url?: string; token?: string; comercialPago?: boolean; publicar?: boolean; preco?: number; cor?: string; tituloFr?: string; tituloPt?: string };
   const tk = process.env.IMPORT_TOKEN;
-  if (!tk || b.token !== tk) return NextResponse.json({ ok: false, motivo: tk ? 'código de acesso errado' : 'IMPORT_TOKEN não configurado no servidor' }, { status: 401 });
+  const autorizado = !!(await sessao()) || (!!tk && b.token === tk);
+  if (!autorizado) return NextResponse.json({ ok: false, motivo: 'entra no backoffice primeiro' }, { status: 401 });
   const l = await lerModelo(String(b.url ?? ''), !!b.comercialPago);
   if (!l.ok || !b.publicar) return NextResponse.json(l);
   const preco = Number(b.preco); if (!(preco >= 3 && preco <= 300)) return NextResponse.json({ ...l, ok: false, motivo: 'preço entre 3 € e 300 €' });

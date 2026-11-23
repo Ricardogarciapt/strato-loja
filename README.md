@@ -21,15 +21,19 @@ Objetos de secretária personalizados (nome, logótipo, medida) impressos em 3D 
 | SEO | metadados por página, `hreflang`, JSON-LD Product e FAQ, `sitemap.xml`, `robots.txt` |
 | Ficheiros STL prontos a imprimir | fora deste repositório público (guardados à parte) |
 
+## Backoffice
+
+`/pt/painel` (não aparece no Google). Login com a conta do Ruben no morethanmoney.pt: a loja pede o token à Supabase da MTM e guarda-o num cookie httpOnly; nunca guarda palavras-passe. Só entram as contas em `BACKOFFICE_USER_IDS` (por omissão, a do Ruben educador). Separadores: Resumo (estado da loja), Encomendas (Stripe, com a personalização de cada peça), Curadoria MakerWorld, Catálogo. Código: `lib/auth.ts`, `app/[lang]/painel`, `app/api/painel`.
+
 ## Designs da comunidade (MakerWorld, com curadoria)
 
-Página do atelier: `/pt/importar` (não aparece no Google). Cola-se o link de um modelo do MakerWorld e a loja lê a licença.
+Está no backoffice, separador «Curadoria MakerWorld». Cola-se o link de um modelo do MakerWorld e a loja lê a licença.
 
 - Entram só licenças que permitem vender impressões: **CC0, CC BY, CC BY-SA**. Licença padrão do MakerWorld, NC ou ND ficam de fora, a não ser que o atelier tenha a **licença comercial paga** do MakerWorld para esse criador (caixa a marcar).
 - A montra mostra sempre o criador, a licença e o link original. O ficheiro STL/3MF nunca é vendido nem publicado: vende-se só a peça impressa.
 - Um link de cada vez, a pedido (nada de varrimentos automáticos do MakerWorld, que as regras deles proíbem).
 - Ficheiros: `lib/makerworld.ts` (leitura e licença), `app/api/importar/route.ts`, `components/Importador.tsx`, `components/Comunidade.tsx`, dados em `data/comunidade.json`.
-- Variáveis: `IMPORT_TOKEN` (código de acesso da página). Opcional `GITHUB_TOKEN` (token fino com permissão *Contents: write* só neste repositório): com ele, «Publicar» grava `data/comunidade.json` no GitHub e o Vercel republica sozinho. Sem ele, a página mostra o JSON para colar à mão.
+- Variáveis: opcional `GITHUB_TOKEN` (token fino com permissão *Contents: write* só neste repositório): com ele, «Publicar» grava `data/comunidade.json` no GitHub e o Vercel republica sozinho. Sem ele, a página mostra o JSON para colar à mão.
 - Quando a peça estiver impressa, troca-se a imagem do MakerWorld por uma foto própria (campo `imagem`).
 
 ## Correr localmente
